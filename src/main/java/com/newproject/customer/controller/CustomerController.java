@@ -18,8 +18,12 @@ public class CustomerController {
     }
 
     @GetMapping
-    public List<CustomerResponse> list() {
-        return customerService.list();
+    public List<CustomerResponse> list(
+        @RequestParam(required = false) String email,
+        @RequestParam(required = false) String keycloakUserId,
+        @RequestParam(required = false) Boolean active
+    ) {
+        return customerService.list(email, keycloakUserId, active);
     }
 
     @GetMapping("/{id}")

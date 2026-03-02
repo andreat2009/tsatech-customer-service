@@ -9,6 +9,7 @@ import com.newproject.customer.exception.NotFoundException;
 import com.newproject.customer.repository.CustomerRepository;
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.Locale;
 import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,11 +27,15 @@ public class CustomerService {
     @Transactional
     public CustomerResponse create(CustomerRequest request) {
         customerRepository.findByEmail(request.getEmail())
-            .ifPresent(existing -> { throw new BadRequestException("Email already exists"); });
+            .ifPresent(existing -> {
+                throw new BadRequestException("Email already exists");
+            });
 
         if (request.getKeycloakUserId() != null) {
             customerRepository.findByKeycloakUserId(request.getKeycloakUserId())
-                .ifPresent(existing -> { throw new BadRequestException("Keycloak user already linked"); });
+                .ifPresent(existing -> {
+                    throw new BadRequestException("Keycloak user already linked");
+                });
         }
 
         Customer customer = new Customer();
@@ -51,12 +56,16 @@ public class CustomerService {
 
         customerRepository.findByEmail(request.getEmail())
             .filter(existing -> !existing.getId().equals(id))
-            .ifPresent(existing -> { throw new BadRequestException("Email already exists"); });
+            .ifPresent(existing -> {
+                throw new BadRequestException("Email already exists");
+            });
 
         if (request.getKeycloakUserId() != null) {
             customerRepository.findByKeycloakUserId(request.getKeycloakUserId())
                 .filter(existing -> !existing.getId().equals(id))
-                .ifPresent(existing -> { throw new BadRequestException("Keycloak user already linked"); });
+                .ifPresent(existing -> {
+                    throw new BadRequestException("Keycloak user already linked");
+                });
         }
 
         applyRequest(customer, request);
@@ -75,8 +84,23 @@ public class CustomerService {
     }
 
     @Transactional(readOnly = true)
-    public List<CustomerResponse> list() {
+    public List<CustomerResponse> list(String email, String keycloakUserId, Boolean active) {
+        if (email != null && !email.isBlank()) {
+            return customerRepository.findByEmail(email.toLowerCase(Locale.ROOT))
+                .map(this::toResponse)
+                .map(List::of)
+                .orElse(List.of());
+        }
+
+        if (keycloakUserId != null && !keycloakUserId.isBlank()) {
+            return customerRepository.findByKeycloakUserId(keycloakUserId)
+                .map(this::toResponse)
+                .map(List::of)
+                .orElse(List.of());
+        }
+
         return customerRepository.findAll().stream()
+            .filter(customer -> active == null || active.equals(customer.getActive()))
             .map(this::toResponse)
             .collect(Collectors.toList());
     }
@@ -91,7 +115,7 @@ public class CustomerService {
 
     private void applyRequest(Customer customer, CustomerRequest request) {
         customer.setKeycloakUserId(request.getKeycloakUserId());
-        customer.setEmail(request.getEmail());
+        customer.setEmail(request.getEmail() != null ? request.getEmail().toLowerCase(Locale.ROOT) : null);
         customer.setFirstName(request.getFirstName());
         customer.setLastName(request.getLastName());
         customer.setPhone(request.getPhone());

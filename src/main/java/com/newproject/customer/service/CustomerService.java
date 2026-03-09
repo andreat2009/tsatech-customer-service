@@ -26,19 +26,34 @@ public class CustomerService {
 
     @Transactional
     public CustomerResponse create(CustomerRequest request) {
-        customerRepository.findByEmail(request.getEmail())
-            .ifPresent(existing -> {
-                throw new BadRequestException("Email already exists");
-            });
+        String normalizedEmail = request.getEmail() != null ? request.getEmail().toLowerCase(Locale.ROOT) : null;
+        String keycloakUserId = normalizeKeycloakUserId(request.getKeycloakUserId());
 
-        if (request.getKeycloakUserId() != null) {
-            customerRepository.findByKeycloakUserId(request.getKeycloakUserId())
+        Customer existingByEmail = normalizedEmail == null ? null : customerRepository.findByEmail(normalizedEmail).orElse(null);
+        if (existingByEmail != null) {
+            if (keycloakUserId == null) {
+                return toResponse(existingByEmail);
+            }
+            if (existingByEmail.getKeycloakUserId() != null && !keycloakUserId.equals(existingByEmail.getKeycloakUserId())) {
+                throw new BadRequestException("Email already exists");
+            }
+            existingByEmail.setKeycloakUserId(keycloakUserId);
+            existingByEmail.setUpdatedAt(OffsetDateTime.now());
+            Customer saved = customerRepository.save(existingByEmail);
+            eventPublisher.publish("CUSTOMER_UPDATED", "customer", saved.getId().toString(), toResponse(saved));
+            return toResponse(saved);
+        }
+
+        if (keycloakUserId != null) {
+            customerRepository.findByKeycloakUserId(keycloakUserId)
                 .ifPresent(existing -> {
                     throw new BadRequestException("Keycloak user already linked");
                 });
         }
 
         Customer customer = new Customer();
+        request.setKeycloakUserId(keycloakUserId);
+        request.setEmail(normalizedEmail);
         applyRequest(customer, request);
         OffsetDateTime now = OffsetDateTime.now();
         customer.setCreatedAt(now);
@@ -114,12 +129,20 @@ public class CustomerService {
     }
 
     private void applyRequest(Customer customer, CustomerRequest request) {
-        customer.setKeycloakUserId(request.getKeycloakUserId());
+        customer.setKeycloakUserId(normalizeKeycloakUserId(request.getKeycloakUserId()));
         customer.setEmail(request.getEmail() != null ? request.getEmail().toLowerCase(Locale.ROOT) : null);
         customer.setFirstName(request.getFirstName());
         customer.setLastName(request.getLastName());
         customer.setPhone(request.getPhone());
         customer.setActive(request.getActive());
+    }
+
+    private String normalizeKeycloakUserId(String keycloakUserId) {
+        if (keycloakUserId == null) {
+            return null;
+        }
+        String trimmed = keycloakUserId.trim();
+        return trimmed.isEmpty() ? null : trimmed;
     }
 
     private CustomerResponse toResponse(Customer customer) {

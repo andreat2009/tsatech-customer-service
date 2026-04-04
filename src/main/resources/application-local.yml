@@ -1,0 +1,9 @@
+spring:
+  config:
+    activate:
+      on-profile: local
+
+customer:
+  custom-fields:
+    seed:
+      enabled: ${CUSTOM_FIELD_SEED_ENABLED:true}

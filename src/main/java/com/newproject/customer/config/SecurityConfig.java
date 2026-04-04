@@ -7,7 +7,6 @@ import java.util.Map;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
-import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.core.GrantedAuthority;
@@ -27,6 +26,10 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/actuator/health", "/actuator/info").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/customers").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/customers/*/addresses").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/customers/custom-fields", "/api/customers/custom-fields/**").permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/customers/custom-fields", "/api/customers/custom-fields/**").hasAnyRole("ADMIN", "admin")
+                .requestMatchers(HttpMethod.PUT, "/api/customers/custom-fields", "/api/customers/custom-fields/**").hasAnyRole("ADMIN", "admin")
+                .requestMatchers(HttpMethod.DELETE, "/api/customers/custom-fields", "/api/customers/custom-fields/**").hasAnyRole("ADMIN", "admin")
                 .requestMatchers("/api/customers/**").authenticated()
                 .anyRequest().authenticated()
             )

@@ -10,6 +10,7 @@ import com.newproject.customer.exception.NotFoundException;
 import com.newproject.customer.repository.CustomFieldDefinitionRepository;
 import com.newproject.customer.repository.CustomerCustomFieldValueRepository;
 import com.newproject.customer.repository.CustomerRepository;
+import com.newproject.customer.security.RequestActor;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -28,15 +29,18 @@ public class CustomFieldService {
     private final CustomFieldDefinitionRepository definitionRepository;
     private final CustomerCustomFieldValueRepository valueRepository;
     private final CustomerRepository customerRepository;
+    private final RequestActor requestActor;
 
     public CustomFieldService(
         CustomFieldDefinitionRepository definitionRepository,
         CustomerCustomFieldValueRepository valueRepository,
-        CustomerRepository customerRepository
+        CustomerRepository customerRepository,
+        RequestActor requestActor
     ) {
         this.definitionRepository = definitionRepository;
         this.valueRepository = valueRepository;
         this.customerRepository = customerRepository;
+        this.requestActor = requestActor;
     }
 
     @Transactional(readOnly = true)
@@ -89,6 +93,7 @@ public class CustomFieldService {
 
     @Transactional(readOnly = true)
     public List<CustomerCustomFieldValueResponse> listValues(Long customerId, String scope) {
+        requestActor.assertCustomerAccessIfAuthenticated(customerId);
         customerRepository.findById(customerId)
             .orElseThrow(() -> new NotFoundException("Customer not found"));
 
@@ -102,6 +107,7 @@ public class CustomFieldService {
 
     @Transactional
     public List<CustomerCustomFieldValueResponse> upsertValues(Long customerId, List<CustomerCustomFieldValueRequest> requests) {
+        requestActor.assertCustomerAccessIfAuthenticated(customerId);
         Customer customer = customerRepository.findById(customerId)
             .orElseThrow(() -> new NotFoundException("Customer not found"));
         if (requests == null) {

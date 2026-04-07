@@ -9,6 +9,7 @@ import com.newproject.customer.exception.BadRequestException;
 import com.newproject.customer.exception.NotFoundException;
 import com.newproject.customer.repository.AddressRepository;
 import com.newproject.customer.repository.CustomerRepository;
+import com.newproject.customer.security.RequestActor;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
@@ -19,15 +20,23 @@ public class AddressService {
     private final AddressRepository addressRepository;
     private final CustomerRepository customerRepository;
     private final EventPublisher eventPublisher;
+    private final RequestActor requestActor;
 
-    public AddressService(AddressRepository addressRepository, CustomerRepository customerRepository, EventPublisher eventPublisher) {
+    public AddressService(
+        AddressRepository addressRepository,
+        CustomerRepository customerRepository,
+        EventPublisher eventPublisher,
+        RequestActor requestActor
+    ) {
         this.addressRepository = addressRepository;
         this.customerRepository = customerRepository;
         this.eventPublisher = eventPublisher;
+        this.requestActor = requestActor;
     }
 
     @Transactional
     public AddressResponse create(Long customerId, AddressRequest request) {
+        requestActor.assertCustomerAccessIfAuthenticated(customerId);
         Customer customer = customerRepository.findById(customerId)
             .orElseThrow(() -> new NotFoundException("Customer not found"));
 
@@ -44,6 +53,7 @@ public class AddressService {
     public AddressResponse update(Long addressId, AddressRequest request) {
         Address address = addressRepository.findById(addressId)
             .orElseThrow(() -> new NotFoundException("Address not found"));
+        requestActor.assertCustomerAccessIfAuthenticated(address.getCustomer().getId());
         applyRequest(address, request);
         Address saved = addressRepository.save(address);
         eventPublisher.publish("ADDRESS_UPDATED", "address", saved.getId().toString(), toResponse(saved));
@@ -54,11 +64,13 @@ public class AddressService {
     public AddressResponse get(Long addressId) {
         Address address = addressRepository.findById(addressId)
             .orElseThrow(() -> new NotFoundException("Address not found"));
+        requestActor.assertCustomerAccessIfAuthenticated(address.getCustomer().getId());
         return toResponse(address);
     }
 
     @Transactional(readOnly = true)
     public List<AddressResponse> listForCustomer(Long customerId) {
+        requestActor.assertCustomerAccessIfAuthenticated(customerId);
         customerRepository.findById(customerId)
             .orElseThrow(() -> new NotFoundException("Customer not found"));
         return addressRepository.findByCustomerId(customerId).stream()
@@ -70,6 +82,7 @@ public class AddressService {
     public void delete(Long addressId) {
         Address address = addressRepository.findById(addressId)
             .orElseThrow(() -> new NotFoundException("Address not found"));
+        requestActor.assertCustomerAccessIfAuthenticated(address.getCustomer().getId());
         addressRepository.delete(address);
         eventPublisher.publish("ADDRESS_DELETED", "address", addressId.toString(), null);
     }

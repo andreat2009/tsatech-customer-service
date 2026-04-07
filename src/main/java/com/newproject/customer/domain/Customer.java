@@ -25,6 +25,9 @@ public class Customer {
     @Column(length = 32)
     private String phone;
 
+    @Column(name = "customer_group_code", length = 64, nullable = false)
+    private String customerGroupCode;
+
     @Column(nullable = false)
     private Boolean active;
 
@@ -80,6 +83,14 @@ public class Customer {
 
     public void setPhone(String phone) {
         this.phone = phone;
+    }
+
+    public String getCustomerGroupCode() {
+        return customerGroupCode;
+    }
+
+    public void setCustomerGroupCode(String customerGroupCode) {
+        this.customerGroupCode = customerGroupCode;
     }
 
     public Boolean getActive() {

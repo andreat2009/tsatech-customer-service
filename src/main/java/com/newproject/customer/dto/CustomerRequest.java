@@ -17,6 +17,8 @@ public class CustomerRequest {
 
     private String phone;
 
+    private String customerGroupCode;
+
     @NotNull
     private Boolean active;
 
@@ -58,6 +60,14 @@ public class CustomerRequest {
 
     public void setPhone(String phone) {
         this.phone = phone;
+    }
+
+    public String getCustomerGroupCode() {
+        return customerGroupCode;
+    }
+
+    public void setCustomerGroupCode(String customerGroupCode) {
+        this.customerGroupCode = customerGroupCode;
     }
 
     public Boolean getActive() {

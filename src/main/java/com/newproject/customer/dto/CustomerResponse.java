@@ -9,6 +9,7 @@ public class CustomerResponse {
     private String firstName;
     private String lastName;
     private String phone;
+    private String customerGroupCode;
     private Boolean active;
     private OffsetDateTime createdAt;
     private OffsetDateTime updatedAt;
@@ -59,6 +60,14 @@ public class CustomerResponse {
 
     public void setPhone(String phone) {
         this.phone = phone;
+    }
+
+    public String getCustomerGroupCode() {
+        return customerGroupCode;
+    }
+
+    public void setCustomerGroupCode(String customerGroupCode) {
+        this.customerGroupCode = customerGroupCode;
     }
 
     public Boolean getActive() {

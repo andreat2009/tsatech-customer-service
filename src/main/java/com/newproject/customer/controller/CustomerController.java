@@ -21,9 +21,10 @@ public class CustomerController {
     public List<CustomerResponse> list(
         @RequestParam(required = false) String email,
         @RequestParam(required = false) String keycloakUserId,
+        @RequestParam(required = false) String customerGroupCode,
         @RequestParam(required = false) Boolean active
     ) {
-        return customerService.list(email, keycloakUserId, active);
+        return customerService.list(email, keycloakUserId, customerGroupCode, active);
     }
 
     @GetMapping("/{id}")

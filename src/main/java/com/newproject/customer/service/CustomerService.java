@@ -17,6 +17,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class CustomerService {
+    public static final String DEFAULT_CUSTOMER_GROUP = "RETAIL";
+
     private final CustomerRepository customerRepository;
     private final EventPublisher eventPublisher;
     private final RequestActor requestActor;
@@ -128,7 +130,7 @@ public class CustomerService {
     }
 
     @Transactional(readOnly = true)
-    public List<CustomerResponse> list(String email, String keycloakUserId, Boolean active) {
+    public List<CustomerResponse> list(String email, String keycloakUserId, String customerGroupCode, Boolean active) {
         if (requestActor.isAuthenticated() && !requestActor.isAdmin()) {
             return requestActor.currentCustomer()
                 .map(this::toResponse)
@@ -150,8 +152,10 @@ public class CustomerService {
                 .orElse(List.of());
         }
 
+        String normalizedGroup = normalizeCustomerGroupCodeFilter(customerGroupCode);
         return customerRepository.findAll().stream()
             .filter(customer -> active == null || active.equals(customer.getActive()))
+            .filter(customer -> normalizedGroup == null || normalizedGroup.equals(normalizeCustomerGroupCode(customer.getCustomerGroupCode())))
             .map(this::toResponse)
             .collect(Collectors.toList());
     }
@@ -171,6 +175,7 @@ public class CustomerService {
         customer.setFirstName(request.getFirstName());
         customer.setLastName(request.getLastName());
         customer.setPhone(request.getPhone());
+        customer.setCustomerGroupCode(normalizeCustomerGroupCode(request.getCustomerGroupCode()));
         customer.setActive(request.getActive());
     }
 
@@ -182,6 +187,20 @@ public class CustomerService {
         return trimmed.isEmpty() ? null : trimmed;
     }
 
+    private String normalizeCustomerGroupCode(String customerGroupCode) {
+        if (customerGroupCode == null || customerGroupCode.isBlank()) {
+            return DEFAULT_CUSTOMER_GROUP;
+        }
+        return customerGroupCode.trim().replace(' ', '_').toUpperCase(Locale.ROOT);
+    }
+
+    private String normalizeCustomerGroupCodeFilter(String customerGroupCode) {
+        if (customerGroupCode == null || customerGroupCode.isBlank()) {
+            return null;
+        }
+        return normalizeCustomerGroupCode(customerGroupCode);
+    }
+
     private CustomerResponse toResponse(Customer customer) {
         CustomerResponse response = new CustomerResponse();
         response.setId(customer.getId());
@@ -190,6 +209,7 @@ public class CustomerService {
         response.setFirstName(customer.getFirstName());
         response.setLastName(customer.getLastName());
         response.setPhone(customer.getPhone());
+        response.setCustomerGroupCode(normalizeCustomerGroupCode(customer.getCustomerGroupCode()));
         response.setActive(customer.getActive());
         response.setCreatedAt(customer.getCreatedAt());
         response.setUpdatedAt(customer.getUpdatedAt());

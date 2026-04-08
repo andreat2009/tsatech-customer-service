@@ -28,6 +28,21 @@ public class AddressController {
         return addressService.create(customerId, request);
     }
 
+    @GetMapping("/{customerId}/addresses/type/{addressType}")
+    public AddressResponse getByType(@PathVariable Long customerId, @PathVariable String addressType) {
+        return addressService.getForCustomerAndType(customerId, addressType);
+    }
+
+    @PutMapping("/{customerId}/addresses/type/{addressType}")
+    public AddressResponse upsertByType(
+        @PathVariable Long customerId,
+        @PathVariable String addressType,
+        @Valid @RequestBody AddressRequest request
+    ) {
+        request.setAddressType(addressType);
+        return addressService.upsertForCustomerAndType(customerId, addressType, request);
+    }
+
     @GetMapping("/addresses/{addressId}")
     public AddressResponse get(@PathVariable Long addressId) {
         return addressService.get(addressId);

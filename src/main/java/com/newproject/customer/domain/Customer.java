@@ -28,6 +28,18 @@ public class Customer {
     @Column(name = "customer_group_code", length = 64, nullable = false)
     private String customerGroupCode;
 
+    @Column(name = "preferred_payment_method_code", length = 64)
+    private String preferredPaymentMethodCode;
+
+    @Column(name = "preferred_shipping_method_code", length = 64)
+    private String preferredShippingMethodCode;
+
+    @Column(name = "privacy_accepted_at")
+    private OffsetDateTime privacyAcceptedAt;
+
+    @Column(name = "privacy_policy_version", length = 64)
+    private String privacyPolicyVersion;
+
     @Column(nullable = false)
     private Boolean active;
 
@@ -37,83 +49,32 @@ public class Customer {
     @Column(name = "updated_at", nullable = false)
     private OffsetDateTime updatedAt;
 
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getKeycloakUserId() {
-        return keycloakUserId;
-    }
-
-    public void setKeycloakUserId(String keycloakUserId) {
-        this.keycloakUserId = keycloakUserId;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public String getFirstName() {
-        return firstName;
-    }
-
-    public void setFirstName(String firstName) {
-        this.firstName = firstName;
-    }
-
-    public String getLastName() {
-        return lastName;
-    }
-
-    public void setLastName(String lastName) {
-        this.lastName = lastName;
-    }
-
-    public String getPhone() {
-        return phone;
-    }
-
-    public void setPhone(String phone) {
-        this.phone = phone;
-    }
-
-    public String getCustomerGroupCode() {
-        return customerGroupCode;
-    }
-
-    public void setCustomerGroupCode(String customerGroupCode) {
-        this.customerGroupCode = customerGroupCode;
-    }
-
-    public Boolean getActive() {
-        return active;
-    }
-
-    public void setActive(Boolean active) {
-        this.active = active;
-    }
-
-    public OffsetDateTime getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(OffsetDateTime createdAt) {
-        this.createdAt = createdAt;
-    }
-
-    public OffsetDateTime getUpdatedAt() {
-        return updatedAt;
-    }
-
-    public void setUpdatedAt(OffsetDateTime updatedAt) {
-        this.updatedAt = updatedAt;
-    }
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+    public String getKeycloakUserId() { return keycloakUserId; }
+    public void setKeycloakUserId(String keycloakUserId) { this.keycloakUserId = keycloakUserId; }
+    public String getEmail() { return email; }
+    public void setEmail(String email) { this.email = email; }
+    public String getFirstName() { return firstName; }
+    public void setFirstName(String firstName) { this.firstName = firstName; }
+    public String getLastName() { return lastName; }
+    public void setLastName(String lastName) { this.lastName = lastName; }
+    public String getPhone() { return phone; }
+    public void setPhone(String phone) { this.phone = phone; }
+    public String getCustomerGroupCode() { return customerGroupCode; }
+    public void setCustomerGroupCode(String customerGroupCode) { this.customerGroupCode = customerGroupCode; }
+    public String getPreferredPaymentMethodCode() { return preferredPaymentMethodCode; }
+    public void setPreferredPaymentMethodCode(String preferredPaymentMethodCode) { this.preferredPaymentMethodCode = preferredPaymentMethodCode; }
+    public String getPreferredShippingMethodCode() { return preferredShippingMethodCode; }
+    public void setPreferredShippingMethodCode(String preferredShippingMethodCode) { this.preferredShippingMethodCode = preferredShippingMethodCode; }
+    public OffsetDateTime getPrivacyAcceptedAt() { return privacyAcceptedAt; }
+    public void setPrivacyAcceptedAt(OffsetDateTime privacyAcceptedAt) { this.privacyAcceptedAt = privacyAcceptedAt; }
+    public String getPrivacyPolicyVersion() { return privacyPolicyVersion; }
+    public void setPrivacyPolicyVersion(String privacyPolicyVersion) { this.privacyPolicyVersion = privacyPolicyVersion; }
+    public Boolean getActive() { return active; }
+    public void setActive(Boolean active) { this.active = active; }
+    public OffsetDateTime getCreatedAt() { return createdAt; }
+    public void setCreatedAt(OffsetDateTime createdAt) { this.createdAt = createdAt; }
+    public OffsetDateTime getUpdatedAt() { return updatedAt; }
+    public void setUpdatedAt(OffsetDateTime updatedAt) { this.updatedAt = updatedAt; }
 }

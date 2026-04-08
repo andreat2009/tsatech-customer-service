@@ -172,10 +172,14 @@ public class CustomerService {
     private void applyRequest(Customer customer, CustomerRequest request) {
         customer.setKeycloakUserId(normalizeKeycloakUserId(request.getKeycloakUserId()));
         customer.setEmail(request.getEmail() != null ? request.getEmail().toLowerCase(Locale.ROOT) : null);
-        customer.setFirstName(request.getFirstName());
-        customer.setLastName(request.getLastName());
-        customer.setPhone(request.getPhone());
+        customer.setFirstName(trimToNull(request.getFirstName()));
+        customer.setLastName(trimToNull(request.getLastName()));
+        customer.setPhone(trimToNull(request.getPhone()));
         customer.setCustomerGroupCode(normalizeCustomerGroupCode(request.getCustomerGroupCode()));
+        customer.setPreferredPaymentMethodCode(trimToNull(request.getPreferredPaymentMethodCode()));
+        customer.setPreferredShippingMethodCode(trimToNull(request.getPreferredShippingMethodCode()));
+        customer.setPrivacyAcceptedAt(request.getPrivacyAcceptedAt());
+        customer.setPrivacyPolicyVersion(trimToNull(request.getPrivacyPolicyVersion()));
         customer.setActive(request.getActive());
     }
 
@@ -201,6 +205,14 @@ public class CustomerService {
         return normalizeCustomerGroupCode(customerGroupCode);
     }
 
+    private String trimToNull(String value) {
+        if (value == null) {
+            return null;
+        }
+        String trimmed = value.trim();
+        return trimmed.isBlank() ? null : trimmed;
+    }
+
     private CustomerResponse toResponse(Customer customer) {
         CustomerResponse response = new CustomerResponse();
         response.setId(customer.getId());
@@ -210,6 +222,10 @@ public class CustomerService {
         response.setLastName(customer.getLastName());
         response.setPhone(customer.getPhone());
         response.setCustomerGroupCode(normalizeCustomerGroupCode(customer.getCustomerGroupCode()));
+        response.setPreferredPaymentMethodCode(customer.getPreferredPaymentMethodCode());
+        response.setPreferredShippingMethodCode(customer.getPreferredShippingMethodCode());
+        response.setPrivacyAcceptedAt(customer.getPrivacyAcceptedAt());
+        response.setPrivacyPolicyVersion(customer.getPrivacyPolicyVersion());
         response.setActive(customer.getActive());
         response.setCreatedAt(customer.getCreatedAt());
         response.setUpdatedAt(customer.getUpdatedAt());

@@ -41,6 +41,13 @@ public class AddressService {
         Customer customer = customerRepository.findById(customerId)
             .orElseThrow(() -> new NotFoundException("Customer not found"));
 
+        // Anti-pollution: un chiamante anonimo (guest checkout) può aggiungere indirizzi SOLO a
+        // un customer guest (senza account Keycloak). Impedisce a un anonimo che enumera gli id
+        // di scrivere indirizzi sul profilo di un utente REGISTRATO.
+        if (!requestActor.isAuthenticated() && customer.getKeycloakUserId() != null) {
+            throw new BadRequestException("Aggiungere indirizzi a un account registrato richiede autenticazione");
+        }
+
         Address address = new Address();
         address.setCustomer(customer);
         applyRequest(address, request);

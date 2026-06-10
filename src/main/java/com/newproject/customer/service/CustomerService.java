@@ -48,6 +48,13 @@ public class CustomerService {
         if (existingByEmail != null) {
             if (keycloakUserId == null) {
                 requestActor.assertCustomerAccessIfAuthenticated(existingByEmail.getId());
+                // Privacy/anti-enumeration: a un chiamante NON autenticato (guest checkout) che
+                // fornisce un'email già registrata NON riveliamo i dati del profilo esistente.
+                // Restituiamo solo l'id (+ l'email che ha già fornito), sufficiente ad agganciare
+                // l'ordine guest. Così un anonimo non può confermare account né raccogliere PII.
+                if (!requestActor.isAuthenticated()) {
+                    return minimalResponse(existingByEmail.getId(), normalizedEmail);
+                }
                 return toResponse(existingByEmail);
             }
             if (existingByEmail.getKeycloakUserId() != null && !keycloakUserId.equals(existingByEmail.getKeycloakUserId())) {
@@ -211,6 +218,15 @@ public class CustomerService {
         }
         String trimmed = value.trim();
         return trimmed.isBlank() ? null : trimmed;
+    }
+
+    /** Risposta minimale (solo id + email fornita dal chiamante): usata per non rivelare
+     *  PII di un profilo esistente a un chiamante anonimo (anti-enumeration). */
+    private CustomerResponse minimalResponse(Long id, String email) {
+        CustomerResponse r = new CustomerResponse();
+        r.setId(id);
+        r.setEmail(email);
+        return r;
     }
 
     private CustomerResponse toResponse(Customer customer) {
